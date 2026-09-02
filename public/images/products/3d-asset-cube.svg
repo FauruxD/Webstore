@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="3D asset preview">
+  <defs>
+    <linearGradient id="topFace" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8A7DF0" /><stop offset="1" stop-color="#6657E8" />
+    </linearGradient>
+    <linearGradient id="leftFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5A4CD4" /><stop offset="1" stop-color="#4839BD" />
+    </linearGradient>
+    <linearGradient id="rightFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4B3EB8" /><stop offset="1" stop-color="#3A2E9A" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="150" cy="150" r="132" fill="#E8E4FF" />
+  <ellipse cx="150" cy="238" rx="76" ry="15" fill="#111111" opacity="0.1" />
+
+  <!-- isometric cube -->
+  <path d="M150 62 L232 110 L150 158 L68 110 Z" fill="url(#topFace)" />
+  <path d="M68 110 L150 158 L150 244 L68 196 Z" fill="url(#leftFace)" />
+  <path d="M232 110 L150 158 L150 244 L232 196 Z" fill="url(#rightFace)" />
+
+  <!-- edge highlights -->
+  <path d="M150 62 L232 110 L150 158 L68 110 Z" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2" />
+  <path d="M150 158 L150 244" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2" />
+
+  <!-- floating chips -->
+  <g opacity="0.9">
+    <rect x="44" y="52" width="34" height="34" rx="10" fill="#FFFFFF" stroke="#DAD6CD" stroke-width="1.5" transform="rotate(-12 61 69)" />
+    <rect x="222" y="200" width="30" height="30" rx="9" fill="#FFFFFF" stroke="#DAD6CD" stroke-width="1.5" transform="rotate(14 237 215)" />
+  </g>
+</svg>

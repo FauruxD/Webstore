@@ -1,0 +1,397 @@
+@import "tailwindcss";
+/* Storefront smooth scrolling. Only takes effect while Lenis has added its
+   classes to <html>, so the admin dashboard is unaffected. */
+@import "lenis/dist/lenis.css";
+
+@layer base {
+  :root {
+    /* Storefront Design Tokens */
+    --store-bg: #F8F6F0;
+    --store-surface: #FFFFFF;
+    --store-ink: #111111;
+    --store-muted: #686660;
+    --store-border: #E5E2D9;
+    --store-accent: #6657E8;
+    --store-accent-soft: #E8E4FF;
+    --store-success: #187A4A;
+    --store-warning: #9A6000;
+    --store-danger: #B42318;
+
+    /* Admin Design Tokens (storefront warm family, one palette per project) */
+    --admin-bg: #F8F6F0;
+    /* Sidebar sits one step lighter than the page so the white active pill reads. */
+    --admin-sidebar: #FCFBF7;
+    --admin-surface: #FFFFFF;
+    --admin-ink: #111111;
+    --admin-muted: #686660;
+    --admin-subtle: #A39F96;
+    --admin-border: #E5E2D9;
+    --admin-hover: #F4F1EA;
+    --admin-active: #ECE8DE;
+    --admin-accent: #6657E8;
+    --admin-danger: #B42318;
+
+    /* Typography Systems */
+    --font-display: var(--font-display), "Bodoni Moda", Georgia, serif;
+    --font-sans: var(--font-sans), "Manrope", system-ui, -apple-system, sans-serif;
+
+    /* Sidebar Variables */
+    --sidebar-width-expanded: 264px;
+    --sidebar-width-collapsed: 76px;
+    --sidebar-width: var(--sidebar-width-expanded);
+  }
+
+  body {
+    background-color: var(--store-bg);
+    color: var(--store-ink);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Admin Application Shell */
+.admin-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+  background-color: var(--admin-bg);
+  color: var(--admin-ink);
+  font-family: var(--font-sans);
+}
+
+.admin-main-viewport {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  transition: padding-left 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (min-width: 768px) {
+  .admin-shell {
+    flex-direction: row;
+  }
+
+  .admin-main-viewport {
+    padding-left: var(--sidebar-width);
+  }
+}
+
+/* Admin Typography Utility Classes */
+.admin-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 3vw, 42px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--admin-ink);
+}
+
+.admin-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  color: var(--admin-muted);
+}
+
+.admin-description {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--admin-muted);
+  max-width: 68ch;
+}
+
+/* ==========================================================================
+   Admin data surfaces
+   The tables carry the same editorial rules as the storefront sections: a
+   hairline header, hairline row dividers, and no inner card chrome.
+   ========================================================================== */
+.admin-surface {
+  background-color: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.admin-table {
+  width: 100%;
+  text-align: left;
+  font-size: 12.5px;
+  color: var(--admin-ink);
+  border-collapse: collapse;
+}
+
+.admin-table thead tr {
+  background-color: var(--admin-hover);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-table th {
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--admin-muted);
+  padding: 12px 20px;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 16px 20px;
+  vertical-align: middle;
+}
+
+.admin-table tbody tr {
+  border-top: 1px solid var(--admin-border);
+  transition: background-color 160ms ease;
+}
+
+.admin-table tbody tr:first-child {
+  border-top: 0;
+}
+
+.admin-table tbody tr:hover {
+  background-color: var(--admin-hover);
+}
+
+/* Primary cell: product name, customer name, invoice owner. */
+.admin-cell-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--admin-ink);
+  display: block;
+}
+
+.admin-cell-sub {
+  font-size: 11.5px;
+  color: var(--admin-muted);
+}
+
+/* ==========================================================================
+   Storefront intro preloader
+   The gate script in the storefront layout sets html[data-intro] before the
+   body paints, so the ivory curtain below covers the homepage until the GSAP
+   overlay has mounted. Both are #F8F6F0, so the handover is seamless.
+   ========================================================================== */
+html[data-intro]::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: #F8F6F0;
+  pointer-events: none;
+}
+
+html[data-intro] {
+  overflow: hidden;
+}
+
+/* Pre-hydration resting state for the post-split hero entrance. */
+html[data-intro] [data-hero-enter] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-intro] [data-hero-enter] {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Storefront scroll reveals
+   The reveal gate script sets html[data-reveal-armed] before the body paints,
+   so marked elements start hidden instead of flashing at full opacity and then
+   jumping once GSAP arms them. The provider clears the attribute as soon as it
+   has claimed the elements with inline styles, and a failsafe in the gate
+   script clears it anyway if the provider never mounts.
+   ========================================================================== */
+html[data-reveal-armed] [data-reveal],
+html[data-reveal-armed] [data-reveal-item] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Belt and braces: the gate script already skips arming under reduced
+     motion, so this only matters if the preference changes mid-session. */
+  html[data-reveal-armed] [data-reveal],
+  html[data-reveal-armed] [data-reveal-item] {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Shared micro-interactions
+   CSS rather than a JS library: these fire on mount or on state change, never
+   on scroll, so there is nothing for GSAP to coordinate. Every one animates
+   transform and opacity only, and each has a reduced-motion escape below.
+   ========================================================================== */
+@keyframes atelier-fade-down {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes atelier-fade-up {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes atelier-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mobile: a sheet rising from the bottom edge. */
+@keyframes atelier-sheet-in {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* Desktop: a centred panel settling into place. */
+@keyframes atelier-panel-in {
+  from {
+    opacity: 0;
+    scale: 0.98;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
+}
+
+/* Cart drawer: slides in from the trailing edge. */
+@keyframes atelier-drawer-in {
+  from {
+    translate: 24px 0;
+    opacity: 0.6;
+  }
+  to {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+
+@keyframes atelier-media-swap {
+  from {
+    opacity: 0;
+    scale: 1.015;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes atelier-badge-pop {
+  0% {
+    scale: 0.6;
+  }
+  60% {
+    scale: 1.12;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+/* Mobile nav sheet, dropdowns: enters from just above its resting spot. */
+.motion-fade-down {
+  animation: atelier-fade-down 220ms cubic-bezier(0.22, 0.8, 0.28, 1) both;
+}
+
+/* Toasts, inline panels, gallery swaps. */
+.motion-fade-up {
+  animation: atelier-fade-up 260ms cubic-bezier(0.22, 0.8, 0.28, 1) both;
+}
+
+/* Cart count. Scales only, so the badge never nudges the button. */
+.motion-badge-pop {
+  animation: atelier-badge-pop 320ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+/* Primary gallery frame: plays once each time the active item changes, so the
+   swap reads as a quick fade rather than a hard cut. */
+.motion-media-swap {
+  animation: atelier-media-swap 300ms ease-out both;
+}
+
+/* Dialog scrim. */
+.motion-dialog-backdrop {
+  animation: atelier-backdrop-in 200ms ease-out both;
+}
+
+.motion-drawer-in {
+  animation: atelier-drawer-in 260ms cubic-bezier(0.22, 0.8, 0.28, 1) both;
+}
+
+/* Dialog surface. Mobile is a sheet, desktop a panel; the media query lives
+   here rather than in a `sm:` utility, because Tailwind cannot vary the
+   animation name per breakpoint. */
+.motion-dialog-surface {
+  animation: atelier-sheet-in 260ms cubic-bezier(0.22, 0.8, 0.28, 1) both;
+}
+
+@media (min-width: 640px) {
+  .motion-dialog-surface {
+    animation: atelier-panel-in 240ms cubic-bezier(0.22, 0.8, 0.28, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-fade-down,
+  .motion-fade-up,
+  .motion-badge-pop,
+  .motion-media-swap,
+  .motion-dialog-backdrop,
+  .motion-dialog-surface,
+  .motion-drawer-in {
+    animation: none;
+  }
+}

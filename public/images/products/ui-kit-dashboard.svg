@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Lumina design system dashboard preview">
+  <defs>
+    <clipPath id="frame"><rect width="800" height="500" rx="18" /></clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <rect width="800" height="500" fill="#FFFFFF" />
+
+    <!-- window chrome -->
+    <rect width="800" height="44" fill="#F8F6F0" />
+    <line x1="0" y1="44" x2="800" y2="44" stroke="#E5E2D9" stroke-width="1.5" />
+    <circle cx="26" cy="22" r="5" fill="#DAD6CD" />
+    <circle cx="44" cy="22" r="5" fill="#DAD6CD" />
+    <circle cx="62" cy="22" r="5" fill="#DAD6CD" />
+    <rect x="88" y="14" width="150" height="16" rx="8" fill="#ECE8DE" />
+
+    <!-- sidebar -->
+    <rect x="0" y="44" width="176" height="456" fill="#FCFBF7" />
+    <line x1="176" y1="44" x2="176" y2="500" stroke="#E5E2D9" stroke-width="1.5" />
+    <circle cx="32" cy="80" r="12" fill="#111111" />
+    <rect x="52" y="72" width="82" height="14" rx="7" fill="#DAD6CD" />
+    <rect x="16" y="112" width="144" height="30" rx="10" fill="#FFFFFF" stroke="#E5E2D9" stroke-width="1.5" />
+    <rect x="30" y="122" width="10" height="10" rx="3" fill="#6657E8" />
+    <rect x="50" y="122" width="72" height="10" rx="5" fill="#111111" opacity="0.7" />
+    <g fill="#DAD6CD">
+      <rect x="30" y="162" width="10" height="10" rx="3" /><rect x="50" y="162" width="86" height="10" rx="5" />
+      <rect x="30" y="196" width="10" height="10" rx="3" /><rect x="50" y="196" width="64" height="10" rx="5" />
+      <rect x="30" y="230" width="10" height="10" rx="3" /><rect x="50" y="230" width="78" height="10" rx="5" />
+      <rect x="30" y="264" width="10" height="10" rx="3" /><rect x="50" y="264" width="56" height="10" rx="5" />
+    </g>
+
+    <!-- header -->
+    <rect x="208" y="76" width="228" height="20" rx="6" fill="#111111" />
+    <rect x="208" y="106" width="150" height="12" rx="6" fill="#DAD6CD" />
+    <rect x="676" y="78" width="100" height="34" rx="17" fill="#6657E8" />
+
+    <!-- KPI row -->
+    <g>
+      <rect x="208" y="146" width="180" height="92" rx="14" fill="#F8F6F0" stroke="#E5E2D9" stroke-width="1.5" />
+      <rect x="226" y="166" width="52" height="9" rx="4.5" fill="#A39F96" />
+      <rect x="226" y="186" width="86" height="20" rx="6" fill="#111111" />
+      <rect x="226" y="214" width="40" height="8" rx="4" fill="#187A4A" />
+
+      <rect x="404" y="146" width="180" height="92" rx="14" fill="#F8F6F0" stroke="#E5E2D9" stroke-width="1.5" />
+      <rect x="422" y="166" width="44" height="9" rx="4.5" fill="#A39F96" />
+      <rect x="422" y="186" width="70" height="20" rx="6" fill="#111111" />
+      <rect x="422" y="214" width="52" height="8" rx="4" fill="#187A4A" />
+
+      <rect x="600" y="146" width="176" height="92" rx="14" fill="#E8E4FF" stroke="#6657E8" stroke-width="1.5" opacity="0.9" />
+      <rect x="618" y="166" width="48" height="9" rx="4.5" fill="#6657E8" opacity="0.6" />
+      <rect x="618" y="186" width="78" height="20" rx="6" fill="#6657E8" />
+      <rect x="618" y="214" width="36" height="8" rx="4" fill="#6657E8" opacity="0.5" />
+    </g>
+
+    <!-- chart -->
+    <rect x="208" y="258" width="368" height="212" rx="14" fill="#FFFFFF" stroke="#E5E2D9" stroke-width="1.5" />
+    <rect x="228" y="278" width="96" height="11" rx="5.5" fill="#111111" opacity="0.75" />
+    <g fill="#E8E4FF">
+      <rect x="228" y="382" width="30" height="62" rx="6" />
+      <rect x="274" y="356" width="30" height="88" rx="6" />
+      <rect x="320" y="398" width="30" height="46" rx="6" />
+      <rect x="366" y="340" width="30" height="104" rx="6" />
+      <rect x="412" y="368" width="30" height="76" rx="6" />
+    </g>
+    <rect x="458" y="316" width="30" height="128" rx="6" fill="#6657E8" />
+    <rect x="504" y="360" width="30" height="84" rx="6" fill="#E8E4FF" />
+    <line x1="228" y1="446" x2="556" y2="446" stroke="#E5E2D9" stroke-width="1.5" />
+
+    <!-- component swatches -->
+    <rect x="600" y="258" width="176" height="212" rx="14" fill="#FFFFFF" stroke="#E5E2D9" stroke-width="1.5" />
+    <rect x="618" y="278" width="72" height="11" rx="5.5" fill="#111111" opacity="0.75" />
+    <rect x="618" y="306" width="140" height="30" rx="15" fill="#111111" />
+    <rect x="618" y="346" width="140" height="30" rx="15" fill="#F4F1EA" stroke="#E5E2D9" stroke-width="1.5" />
+    <g>
+      <circle cx="634" cy="404" r="14" fill="#6657E8" />
+      <circle cx="668" cy="404" r="14" fill="#187A4A" />
+      <circle cx="702" cy="404" r="14" fill="#9A6000" />
+      <circle cx="736" cy="404" r="14" fill="#111111" />
+    </g>
+    <rect x="618" y="436" width="104" height="10" rx="5" fill="#DAD6CD" />
+  </g>
+  <rect x="0.75" y="0.75" width="798.5" height="498.5" rx="17.25" fill="none" stroke="#DAD6CD" stroke-width="1.5" />
+</svg>
