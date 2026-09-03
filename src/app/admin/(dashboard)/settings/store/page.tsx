@@ -1,9 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
 import { AdminPageHeader } from '@/components/admin/ui/AdminHeader';
+import { StoreSettingsForm } from '@/components/admin/settings/StoreSettingsForm';
+import { db } from '@/lib/db';
 import { Store, CreditCard } from 'lucide-react';
 
-export default function AdminStoreSettingsPage() {
+export default async function AdminStoreSettingsPage() {
+  const settings = await db.storeSetting.findMany({
+    where: { key: { in: ['store_name', 'notification_email', 'support_whatsapp'] } },
+  });
+  const byKey = new Map(settings.map((setting) => [setting.key, setting.value]));
+
   return (
     <div className="space-y-6 max-w-4xl w-full min-w-0 font-sans">
       <AdminPageHeader
@@ -29,42 +36,12 @@ export default function AdminStoreSettingsPage() {
         </Link>
       </div>
 
-      <div className="admin-surface p-8 space-y-6">
-        <form className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-[#111111] mb-1.5">Nama Webstore *</label>
-            <input
-              type="text"
-              defaultValue="Digital Atelier"
-              className="w-full px-4 py-3 bg-[#F8F6F0] border border-[#E5E2D9] rounded-xl text-xs text-[#111111] focus:outline-none focus:border-[#6657E8]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-[#111111] mb-1.5">Email Pengirim Notifikasi *</label>
-            <input
-              type="email"
-              defaultValue="noreply@webstore.local"
-              className="w-full px-4 py-3 bg-[#F8F6F0] border border-[#E5E2D9] rounded-xl text-xs text-[#111111] focus:outline-none focus:border-[#6657E8]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-[#111111] mb-1.5">WhatsApp Dukungan Pembeli</label>
-            <input
-              type="text"
-              defaultValue="628123456789"
-              className="w-full px-4 py-3 bg-[#F8F6F0] border border-[#E5E2D9] rounded-xl text-xs text-[#111111] focus:outline-none focus:border-[#6657E8]"
-            />
-          </div>
-
-          <button
-            type="button"
-            className="px-6 py-3 bg-[#6657E8] text-white text-xs font-semibold rounded-xl hover:bg-[#5244D2] transition-colors"
-          >
-            Simpan Pengaturan
-          </button>
-        </form>
+      <div className="admin-surface space-y-6 p-5 sm:p-8">
+        <StoreSettingsForm
+          initialStoreName={byKey.get('store_name') || 'Digital Atelier'}
+          initialNotificationEmail={byKey.get('notification_email') || 'noreply@webstore.local'}
+          initialSupportWhatsapp={byKey.get('support_whatsapp') || '628123456789'}
+        />
       </div>
     </div>
   );

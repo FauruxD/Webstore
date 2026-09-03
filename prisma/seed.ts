@@ -360,7 +360,8 @@ async function main() {
   for (const s of settings) {
     await prisma.storeSetting.upsert({
       where: { key: s.key },
-      update: { value: s.value },
+      // Deployment seeds must not replace settings already selected by an admin.
+      update: {},
       create: s,
     });
   }

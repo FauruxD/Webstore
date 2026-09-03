@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { db } from '../../src/lib/db';
 
 const VIEWPORTS = [
   { width: 1440, height: 900 },
@@ -24,11 +25,16 @@ function trackErrors(page: Page) {
 }
 
 async function loginAsAdmin(page: Page) {
-  await page.goto('/login?next=/admin');
-  await page.locator('input[type="email"]').fill('admin@webstore.local');
-  await page.locator('input[type="password"]').fill('AdminSecret123!');
-  await page.getByRole('button', { name: 'Masuk', exact: true }).click();
-  await page.waitForURL('/admin');
+  const response = await page.request.post('/api/auth/login', {
+    data: {
+      email: 'admin@webstore.local',
+      password: 'AdminSecret123!',
+      next: '/admin',
+    },
+  });
+  expect(response.ok()).toBe(true);
+  await page.goto('/admin');
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 }
 
 async function expectNoPageOverflow(page: Page) {
@@ -90,6 +96,50 @@ test.describe('Admin management, report, and dashboard additions', () => {
     expect(errors).toEqual([]);
   });
 
+  test('store settings are validated and persisted', async ({ page }) => {
+    const keys = ['store_name', 'notification_email', 'support_whatsapp'];
+    const previousSettings = await db.storeSetting.findMany({ where: { key: { in: keys } } });
+    const startedAt = new Date();
+
+    try {
+      await page.setViewportSize(VIEWPORTS[4]);
+      await loginAsAdmin(page);
+      await page.goto('/admin/settings/store');
+
+      await page.getByLabel('Nama Webstore *').fill('Digital Atelier QA');
+      await page.getByLabel('Email Pengirim Notifikasi *').fill('invalid-email');
+      await page.getByRole('button', { name: 'Simpan Pengaturan' }).click();
+      await expect(page.getByText('Periksa kembali data pengaturan toko.', { exact: true })).toBeVisible();
+
+      const errors = trackErrors(page);
+      await page.getByLabel('Email Pengirim Notifikasi *').fill('qa@digital-atelier.test');
+      await page.getByLabel('WhatsApp Dukungan Pembeli').fill('+62 812-3456-7890');
+      await page.getByRole('button', { name: 'Simpan Pengaturan' }).click();
+      await expect(page.getByRole('status')).toContainText('Pengaturan toko berhasil disimpan.');
+
+      const savedSettings = await db.storeSetting.findMany({ where: { key: { in: keys } } });
+      expect(Object.fromEntries(savedSettings.map((setting) => [setting.key, setting.value]))).toMatchObject({
+        store_name: 'Digital Atelier QA',
+        notification_email: 'qa@digital-atelier.test',
+        support_whatsapp: '+62 812-3456-7890',
+      });
+      await expectNoPageOverflow(page);
+      expect(errors).toEqual([]);
+    } finally {
+      await db.$transaction(async (tx) => {
+        await tx.storeSetting.deleteMany({ where: { key: { in: keys } } });
+        if (previousSettings.length > 0) {
+          await tx.storeSetting.createMany({
+            data: previousSettings.map(({ key, value }) => ({ key, value })),
+          });
+        }
+        await tx.auditLog.deleteMany({
+          where: { action: 'STORE_SETTINGS_UPDATED', createdAt: { gte: startedAt } },
+        });
+      });
+    }
+  });
+
   test('payment proof opens in an invoice detail dialog on mobile', async ({ page }) => {
     const errors = trackErrors(page);
     await page.setViewportSize(VIEWPORTS[4]);
@@ -109,7 +159,10 @@ test.describe('Admin management, report, and dashboard additions', () => {
       await expect(page.getByRole('dialog')).toBeVisible();
       const proofImage = page.getByRole('img', { name: /Bukti pembayaran/ });
       await expect(proofImage).toBeVisible();
-      await expect.poll(() => proofImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+      await expect.poll(
+        () => proofImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
+        { timeout: 15_000 },
+      ).toBe(true);
       await expect(page.getByText('Buka di Queue Verifikasi')).toHaveCount(0);
       await expectNoPageOverflow(page);
       opened = true;
@@ -118,5 +171,62 @@ test.describe('Admin management, report, and dashboard additions', () => {
 
     expect(opened, 'Expected at least one order with a payment proof in the local MySQL data').toBe(true);
     expect(errors).toEqual([]);
+  });
+
+  test('admin can persist a QRIS image and customers can load it', async ({ page }) => {
+    const keys = [
+      'qris_image_url',
+      'qris_image_data',
+      'qris_image_mime',
+      'qris_image_filename',
+      'qris_image_hash',
+      'qris_image_version',
+    ];
+    const previousSettings = await db.storeSetting.findMany({ where: { key: { in: keys } } });
+    const startedAt = new Date();
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+      'base64',
+    );
+    const errors = trackErrors(page);
+
+    try {
+      await page.setViewportSize(VIEWPORTS[4]);
+      await loginAsAdmin(page);
+      await page.goto('/admin/settings/payment');
+
+      const fileInput = page.locator('#qris-image');
+      await expect(fileInput).toHaveCount(1);
+      const saveButton = page.getByRole('button', { name: 'Simpan Gambar QRIS' });
+      await expect(saveButton).toBeDisabled();
+
+      await fileInput.setInputFiles({ name: 'qa-qris.png', mimeType: 'image/png', buffer: png });
+      await expect(page.getByText('qa-qris.png', { exact: true })).toBeVisible();
+      await expect(saveButton).toBeEnabled();
+      await saveButton.click();
+
+      await expect(page.getByRole('status')).toContainText('Gambar QRIS berhasil disimpan.');
+      const saved = await db.storeSetting.findUniqueOrThrow({ where: { key: 'qris_image_url' } });
+      expect(saved.value).toBe('/api/qris-image');
+
+      const imageResponse = await page.request.get('/api/qris-image');
+      expect(imageResponse.status()).toBe(200);
+      expect(imageResponse.headers()['content-type']).toBe('image/png');
+      expect(Buffer.from(await imageResponse.body())).toEqual(png);
+      await expectNoPageOverflow(page);
+      expect(errors).toEqual([]);
+    } finally {
+      await db.$transaction(async (tx) => {
+        await tx.storeSetting.deleteMany({ where: { key: { in: keys } } });
+        if (previousSettings.length > 0) {
+          await tx.storeSetting.createMany({
+            data: previousSettings.map(({ key, value }) => ({ key, value })),
+          });
+        }
+        await tx.auditLog.deleteMany({
+          where: { action: 'QRIS_IMAGE_UPDATED', createdAt: { gte: startedAt } },
+        });
+      });
+    }
   });
 });

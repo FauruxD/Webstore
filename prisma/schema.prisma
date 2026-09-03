@@ -401,7 +401,7 @@ model Notification {
 model StoreSetting {
   id        String   @id @default(uuid())
   key       String   @unique
-  value     String   @db.Text // Stringified value or JSON
+  value     String   @db.LongText // Stringified value, JSON, or a small persisted store asset
   updatedAt DateTime @updatedAt
 }
 

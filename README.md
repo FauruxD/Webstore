@@ -7,7 +7,7 @@ Next.js 15 webstore untuk produk digital dengan guest checkout, QRIS statis, ver
 - Next.js 15 App Router, React 19, TypeScript strict
 - Prisma ORM dan MySQL 8
 - Tailwind CSS v4, Lucide, GSAP/Framer Motion
-- Penyimpanan privat lokal dengan abstraksi S3/R2
+- Penyimpanan privat lokal (gunakan volume persisten pada deployment)
 - Vitest dan Playwright
 
 ## Menjalankan MySQL lokal
@@ -52,7 +52,7 @@ Importer membuka SQLite dalam mode read-only, memetakan status lama `PAYMENT_VER
 
 ## Akses dan alur
 
-- Admin: `/admin/login`
+- Login admin dan pelanggan: `/login` (tujuan setelah login ditentukan oleh role akun)
 - Pusat pesan admin: `/admin/messages`
 - Order admin: `/admin/orders`
 - Pesan pelanggan: `/messages`
@@ -92,3 +92,10 @@ npm run test:e2e
 ```
 
 Email notifikasi sengaja tidak digunakan pada fase ini; semua event customer dikirim melalui notification center dalam aplikasi.
+
+## Catatan deployment
+
+- Jalankan `npm run db:migrate:deploy` sebelum aplikasi versi baru menerima trafik. Seed aman dijalankan ulang dan tidak akan menimpa gambar QRIS yang sudah dipilih admin.
+- Gunakan nilai production yang kuat untuk `ADMIN_JWT_SECRET` dan `CUSTOMER_SESSION_SECRET`. Cookie sesi otomatis memakai atribut `Secure` pada production.
+- Redirect logout memakai path same-origin (`/login` atau `/`), bukan origin internal dari reverse proxy, sehingga tidak akan mengarah ke `localhost`.
+- Gambar QRIS disimpan di MySQL agar tetap tersedia setelah restart/deploy. File produk, bukti pembayaran, dan lampiran chat masih memakai `LOCAL_STORAGE_PATH`; arahkan path ini ke volume persisten pada container/VPS. Deployment serverless tanpa filesystem persisten memerlukan backend object storage sebelum fitur upload dapat dianggap persisten.

@@ -109,6 +109,7 @@ export default async function PaymentPage({ params }: PaymentPageProps) {
                 src={qrisUrl}
                 alt="QRIS Merchant Payment"
                 fill
+                unoptimized={qrisUrl.startsWith('/api/qris-image')}
                 className="object-contain p-2"
               />
             </div>

@@ -1,14 +1,21 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { db } from '@/lib/db';
 import { AdminPageHeader } from '@/components/admin/ui/AdminHeader';
-import { Store, CreditCard, Upload } from 'lucide-react';
+import { QrisImageSettings } from '@/components/admin/settings/QrisImageSettings';
+import { Store, CreditCard } from 'lucide-react';
 
 export default async function AdminPaymentSettingsPage() {
-  const qrisAsset = await db.fileAsset.findFirst({
-    where: { isPrivate: false },
+  const settings = await db.storeSetting.findMany({
+    where: { key: { in: ['qris_image_url', 'qris_image_filename', 'qris_image_version'] } },
+    select: { key: true, value: true },
   });
+  const values = new Map(settings.map((setting) => [setting.key, setting.value]));
+  const baseImageUrl = values.get('qris_image_url') || '/images/qris-demo.svg';
+  const version = values.get('qris_image_version');
+  const imageUrl = version && baseImageUrl.startsWith('/api/qris-image')
+    ? `${baseImageUrl}?v=${encodeURIComponent(version)}`
+    : baseImageUrl;
 
   return (
     <div className="space-y-6 max-w-4xl w-full min-w-0 font-sans">
@@ -35,31 +42,11 @@ export default async function AdminPaymentSettingsPage() {
         </Link>
       </div>
 
-      <div className="admin-surface p-8 space-y-6">
-        <div className="space-y-4">
-          <h3 className="font-semibold text-sm text-[#111111]">Pratinjau Kode QRIS Aktif</h3>
-          
-          <div className="p-6 bg-[#F8F6F0] rounded-2xl border border-[#E5E2D9] inline-block">
-            <Image
-              src="/images/qris-demo.svg"
-              alt="Merchant Static QRIS Code"
-              width={200}
-              height={200}
-              className="bg-white p-3 rounded-xl shadow-xs"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-[#111111]">Ganti Gambar QRIS (SVG / PNG)</label>
-            <div className="flex items-center gap-4">
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/svg+xml"
-                className="text-xs text-[#686660] file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#E8E4FF] file:text-[#6657E8] hover:file:bg-[#6657E8] hover:file:text-white transition-colors cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
+      <div className="admin-surface space-y-6 p-5 sm:p-8">
+        <QrisImageSettings
+          initialImageUrl={imageUrl}
+          initialFileName={values.get('qris_image_filename') || null}
+        />
       </div>
     </div>
   );

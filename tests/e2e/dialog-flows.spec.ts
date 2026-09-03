@@ -1,6 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
+import { db } from '../../src/lib/db';
 
 const PRODUCT_SLUG = 'lumina-ui-kit';
+const CHECKOUT_COUPON = 'E2E-CHECKOUT-10';
 
 /** Fails the test on any console error, so hydration warnings cannot slip by. */
 function trackConsoleErrors(page: Page): string[] {
@@ -35,6 +37,54 @@ async function loginAsAdmin(page: Page) {
 }
 
 test.describe('Product detail redesign', () => {
+  test.beforeAll(async () => {
+    await db.coupon.upsert({
+      where: { code: CHECKOUT_COUPON },
+      update: {
+        type: 'PERCENTAGE',
+        value: 10,
+        minPurchase: 100_000,
+        maxUsage: 100,
+        currentUsage: 0,
+        startsAt: new Date(Date.now() - 60_000),
+        endsAt: new Date(Date.now() + 60 * 60_000),
+        isActive: true,
+      },
+      create: {
+        code: CHECKOUT_COUPON,
+        type: 'PERCENTAGE',
+        value: 10,
+        minPurchase: 100_000,
+        maxUsage: 100,
+        startsAt: new Date(Date.now() - 60_000),
+        endsAt: new Date(Date.now() + 60 * 60_000),
+        isActive: true,
+      },
+    });
+  });
+
+  test.afterAll(async () => {
+    const coupon = await db.coupon.findUnique({ where: { code: CHECKOUT_COUPON }, select: { id: true } });
+    if (!coupon) return;
+
+    const orders = await db.order.findMany({
+      where: { couponCode: CHECKOUT_COUPON },
+      select: { id: true, customerAccessId: true },
+    });
+    const orderIds = orders.map((order) => order.id);
+    const customerAccessIds = [...new Set(orders.map((order) => order.customerAccessId))];
+    await db.$transaction(async (tx) => {
+      await tx.couponUsage.deleteMany({ where: { couponId: coupon.id } });
+      if (orderIds.length > 0) await tx.order.deleteMany({ where: { id: { in: orderIds } } });
+      await tx.coupon.delete({ where: { id: coupon.id } });
+      if (customerAccessIds.length > 0) {
+        await tx.customerAccess.deleteMany({
+          where: { id: { in: customerAccessIds }, orders: { none: {} }, account: null },
+        });
+      }
+    });
+  });
+
   test('renders the editorial sections and a working purchase panel', async ({ page }) => {
     const errors = trackConsoleErrors(page);
     await page.goto(`/products/${PRODUCT_SLUG}`);
@@ -81,9 +131,9 @@ test.describe('Product detail redesign', () => {
     await dialog.locator('#checkout-whatsapp').fill('08123456789');
 
     // Real coupon validation through the service, not a hardcoded check.
-    await dialog.locator('#checkout-coupon').fill('DISKON10');
+    await dialog.locator('#checkout-coupon').fill(CHECKOUT_COUPON);
     await dialog.getByRole('button', { name: 'Gunakan' }).click();
-    await expect(dialog.getByText(/DISKON10 diterapkan/)).toBeVisible();
+    await expect(dialog.getByText(new RegExp(`${CHECKOUT_COUPON} diterapkan`))).toBeVisible();
 
     await dialog.getByRole('checkbox').check();
 

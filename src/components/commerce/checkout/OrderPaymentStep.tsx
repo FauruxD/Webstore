@@ -92,7 +92,13 @@ export function OrderPaymentStep({
             </div>
 
             <div className="relative mx-auto aspect-square w-full max-w-[240px] rounded-2xl border-2 border-[#DAD6CD] bg-white p-4">
-              <Image src={qrisUrl} alt="Kode QRIS pembayaran" fill className="object-contain p-2" />
+              <Image
+                src={qrisUrl}
+                alt="Kode QRIS pembayaran"
+                fill
+                unoptimized={qrisUrl.startsWith('/api/qris-image')}
+                className="object-contain p-2"
+              />
             </div>
 
             <div>

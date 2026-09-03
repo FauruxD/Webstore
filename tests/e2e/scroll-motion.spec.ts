@@ -68,7 +68,16 @@ test.describe('smooth scrolling scope', () => {
   });
 
   test('never runs on the admin dashboard', async ({ page }) => {
-    await page.goto('/admin/login');
+    const login = await page.request.post('/api/auth/login', {
+      data: {
+        email: 'admin@webstore.local',
+        password: 'AdminSecret123!',
+        next: '/admin',
+      },
+    });
+    expect(login.ok()).toBe(true);
+    await page.goto('/admin');
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
     await page.waitForTimeout(900);
     expect(await lenisActive(page)).toBe(false);
   });
